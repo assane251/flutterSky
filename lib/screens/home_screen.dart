@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:confetti/confetti.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'main_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,8 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialisation du contrôleur de confettis (durée de 3 secondes)
-    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _confettiController = ConfettiController(duration: const Duration(seconds: 5));
   }
 
   @override
@@ -30,11 +30,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blue, Color(0xFFB0E0E6)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
+            colors: [Colors.blueGrey[200]!, Colors.blueGrey[400]!],
           ),
         ),
         child: Stack(
@@ -42,36 +42,24 @@ class _HomeScreenState extends State<HomeScreen> {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 50.0),
-                  // child: Image.asset(
-                  //   'images/logo.png',
-                  //   fit: BoxFit.contain,
-                  //   height: 120,
-                  // ).animate().fadeIn(duration: 1000.ms).scale(),
-                ),
-                const SizedBox(height: 30),
-                const Icon(
-                  Icons.wb_sunny,
-                  size: 80,
-                  color: Colors.white,
-                )
+                Icon(Icons.wb_sunny, size: 100, color: Colors.white.withOpacity(0.9))
                     .animate()
                     .fadeIn(duration: 1200.ms)
                     .rotate(duration: 2000.ms, begin: 0, end: 1),
                 const SizedBox(height: 20),
-                const Text(
-                  "Bienvenue, futur météorologue !",
-                  style: TextStyle(
-                    fontSize: 24,
+                Text(
+                  "Météo en direct",
+                  style: GoogleFonts.lato(
+                    fontSize: 36,
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
-                  textAlign: TextAlign.center,
-                )
-                    .animate()
-                    .fadeIn(duration: 1500.ms)
-                    .slideY(begin: 0.5, end: 0, duration: 800.ms),
+                ).animate().fadeIn(duration: 1500.ms).slideY(begin: 0.5, end: 0, duration: 800.ms),
+                const SizedBox(height: 10),
+                Text(
+                  "Votre météo, en temps réel",
+                  style: GoogleFonts.lato(fontSize: 18, color: Colors.white70),
+                ).animate().fadeIn(duration: 1800.ms),
                 const SizedBox(height: 50),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
@@ -80,11 +68,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        elevation: 5,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
+                        backgroundColor: Colors.white.withOpacity(0.9),
+                        foregroundColor: Colors.black87,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                       ),
                       onPressed: () {
                         _confettiController.play();
@@ -96,14 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         });
                       },
-                      child: const Text(
-                        "Lancer l'aventure",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: Text("Commencer", style: GoogleFonts.lato(fontSize: 18)),
                     ),
                   ),
                 ),
@@ -116,14 +95,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 blastDirectionality: BlastDirectionality.explosive,
                 shouldLoop: false,
                 colors: const [
-                  Colors.green,
+                  Colors.blue,
+                  Colors.white,
                   Colors.yellow,
                   Colors.red,
-                  Colors.white,
+                  Colors.green,
                 ],
-                numberOfParticles: 20,
-                maxBlastForce: 50,
-                minBlastForce: 10,
+                numberOfParticles: 50,
+                maxBlastForce: 60,
+                minBlastForce: 20,
               ),
             ),
           ],
