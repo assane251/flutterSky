@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import '../services/weather_service.dart';
+
 import '../models/weather_model.dart';
+import '../services/weather_service.dart';
 import 'city_detail_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -19,6 +20,7 @@ class _MainScreenState extends State<MainScreen> {
   final controller = PageController(initialPage: 0);
   List<Weather> weatherData = [];
   bool isLoading = true;
+  bool isDarkMode = false; // État pour suivre le mode sombre/clair
 
   final List<String> loadingMessages = [
     'Chargement des données…',
@@ -27,12 +29,21 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   final List<String> cities = [
-    'Dakar', 'Thiès', 'Fatick', 'Saint-Louis',
-    'Conakry', 'Kindia',
-    'Nouakchott', 'Nouadhibou', 'Tombouctou',
-    'Banjul', 'Dubaï',
-    'Paris', 'Réunion',
-    'New York', 'Phoenix',
+    'Dakar',
+    'Thiès',
+    'Fatick',
+    'Saint-Louis',
+    'Conakry',
+    'Kindia',
+    'Nouakchott',
+    'Nouadhibou',
+    'Tombouctou',
+    'Banjul',
+    'Dubaï',
+    'Paris',
+    'Réunion',
+    'New York',
+    'Phoenix',
   ];
 
   final WeatherService weatherService = WeatherService();
@@ -41,6 +52,15 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     fetchWeatherData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Initialiser isDarkMode ici, où le context est garanti d'être prêt
+    setState(() {
+      isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    });
   }
 
   void fetchWeatherData() async {
@@ -72,36 +92,20 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  Widget getWeatherIcon(String description, double temperature) {
-    // switch (description.toLowerCase()) {
-    //   case 'clear':
-    //   case 'sunny':
-    //     return Icon(Icons.wb_sunny, color: Colors.yellow[800], size: 40);
-    //   case 'partly cloudy':
-    //     return Icon(Icons.wb_cloudy, color: Colors.grey[400], size: 40);
-    //   case 'cloudy':
-    //   case 'overcast':
-    //     return Icon(Icons.cloud, color: Colors.grey[600], size: 40);
-    //   case 'rain':
-    //   case 'light rain':
-    //   case 'shower':
-    //     return Icon(Icons.water_drop, color: Colors.blue[400], size: 40);
-    //   case 'snow':
-    //   case 'light snow':
-    //     return Icon(Icons.ac_unit, color: Colors.blue[200], size: 40);
-    //   case 'thunderstorm':
-    //     return Icon(Icons.bolt, color: Colors.yellow[700], size: 40);
-    //   default:
-    //     return Icon(Icons.cloud, color: Colors.grey[600], size: 40);
-    // }
+  Widget getWeatherIcon(
+      BuildContext context, String description, double temperature) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     if (temperature < 15) {
-      return Icon(Icons.water_drop, color: Colors.blue[400], size: 40);
+      return Icon(Icons.water_drop,
+          color: isDarkMode ? Colors.blue[200] : Colors.blue[400], size: 40);
     } else if (temperature >= 15 && temperature < 30) {
-      return Icon(Icons.wb_sunny, color: Colors.yellow[800], size: 40);
+      return Icon(Icons.wb_sunny,
+          color: isDarkMode ? Colors.yellow[600] : Colors.yellow[800],
+          size: 40);
     } else {
-      return Icon(Icons.cloud, color: Colors.grey[600], size: 40);
+      return Icon(Icons.cloud,
+          color: isDarkMode ? Colors.grey[400] : Colors.grey[600], size: 40);
     }
-    // }
   }
 
   @override
@@ -116,62 +120,63 @@ class _MainScreenState extends State<MainScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Colors.blueGrey[200]!, Colors.blueGrey[400]!],
+          colors: isDarkMode
+              ? [Colors.blueGrey[900]!, Colors.blueGrey[700]!]
+              : [Colors.blueGrey[200]!, Colors.blueGrey[400]!],
         ),
       ),
-      child: Center(
-        child: isLoading
-            ? Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SpinKitDoubleBounce(color: Colors.white, size: 60),
-            const SizedBox(height: 20),
-            Text(
-              loadingMessages[DateTime.now().second % loadingMessages.length],
-              style: GoogleFonts.lato(
-                fontSize: 22,
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
+      child: isLoading
+          ? Center(
+              child: LoadingAnimationWidget.fourRotatingDots(
+                color: isDarkMode ? Colors.white : Colors.blue,
+                size: 50,
               ),
+            )
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.cloud_queue,
+                    size: 100,
+                    color: isDarkMode
+                        ? Colors.white70
+                        : Colors.white.withOpacity(0.9)),
+                const SizedBox(height: 20),
+                Text(
+                  'Météo en direct',
+                  style: GoogleFonts.lato(
+                    fontSize: 36,
+                    color: isDarkMode ? Colors.white70 : Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Découvrez la météo en temps réel',
+                  style: GoogleFonts.lato(
+                    fontSize: 18,
+                    color: isDarkMode ? Colors.grey[400] : Colors.white70,
+                  ),
+                ),
+                const SizedBox(height: 30),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDarkMode
+                        ? Colors.grey[800]
+                        : Colors.white.withOpacity(0.9),
+                    foregroundColor: isDarkMode ? Colors.white : Colors.black87,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25)),
+                  ),
+                  onPressed: () => controller.animateToPage(1,
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeInOut),
+                  child:
+                      Text('Explorer', style: GoogleFonts.lato(fontSize: 18)),
+                ),
+              ],
             ),
-          ],
-        )
-            : Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.cloud_queue, size: 100, color: Colors.white.withOpacity(0.9)),
-            const SizedBox(height: 20),
-            Text(
-              'Bienvenue à Météo en direct',
-              style: GoogleFonts.lato(
-                fontSize: 36,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Découvrez la météo en temps réel',
-              style: GoogleFonts.lato(
-                fontSize: 18,
-                color: Colors.white70,
-              ),
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white.withOpacity(0.9),
-                foregroundColor: Colors.black87,
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-              ),
-              onPressed: () => controller.animateToPage(1,
-                  duration: const Duration(milliseconds: 400), curve: Curves.easeInOut),
-              child: Text('Explorer', style: GoogleFonts.lato(fontSize: 18)),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -181,7 +186,9 @@ class _MainScreenState extends State<MainScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Colors.blueGrey[200]!, Colors.blueGrey[400]!],
+          colors: isDarkMode
+              ? [Colors.blueGrey[900]!, Colors.blueGrey[700]!]
+              : [Colors.blueGrey[200]!, Colors.blueGrey[400]!],
         ),
       ),
       child: Column(
@@ -192,10 +199,13 @@ class _MainScreenState extends State<MainScreen> {
               itemBuilder: (context, index) {
                 final weather = weatherData[index];
                 return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: isDarkMode
+                        ? Colors.black.withOpacity(0.3)
+                        : Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: ListTile(
@@ -203,7 +213,7 @@ class _MainScreenState extends State<MainScreen> {
                       weather.city,
                       style: GoogleFonts.lato(
                         fontSize: 24,
-                        color: Colors.white,
+                        color: isDarkMode ? Colors.white70 : Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -212,8 +222,8 @@ class _MainScreenState extends State<MainScreen> {
                         Text(
                           '${weather.temperature.toInt()}°',
                           style: GoogleFonts.lato(
-                            fontSize: 32,
-                            color: Colors.white,
+                            fontSize: 40,
+                            color: isDarkMode ? Colors.white70 : Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -221,12 +231,18 @@ class _MainScreenState extends State<MainScreen> {
                         Expanded(
                           child: Text(
                             weather.description,
-                            style: GoogleFonts.lato(fontSize: 16, color: Colors.white70),
+                            style: GoogleFonts.lato(
+                              fontSize: 18,
+                              color: isDarkMode
+                                  ? Colors.grey[400]
+                                  : Colors.white70,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    trailing: getWeatherIcon(weather.description, weather.temperature),
+                    trailing: getWeatherIcon(
+                        context, weather.description, weather.temperature),
                     onTap: () {
                       final coordinates = _getCityCoordinates(weather.city);
                       Navigator.push(
@@ -250,13 +266,17 @@ class _MainScreenState extends State<MainScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white.withOpacity(0.9),
-                  foregroundColor: Colors.black87,
-                  padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  backgroundColor: isDarkMode
+                      ? Colors.grey[800]
+                      : Colors.white.withOpacity(0.9),
+                  foregroundColor: isDarkMode ? Colors.white : Colors.black87,
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
                 ),
                 onPressed: fetchWeatherData,
-                child: Text('Actualiser', style: GoogleFonts.lato(fontSize: 16)),
+                child:
+                    Text('Actualiser', style: GoogleFonts.lato(fontSize: 16)),
               ),
             ),
           ),
@@ -271,7 +291,9 @@ class _MainScreenState extends State<MainScreen> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Colors.blueGrey[200]!, Colors.blueGrey[400]!],
+          colors: isDarkMode
+              ? [Colors.blueGrey[900]!, Colors.blueGrey[700]!]
+              : [Colors.blueGrey[200]!, Colors.blueGrey[400]!],
         ),
       ),
       child: Center(
@@ -280,13 +302,17 @@ class _MainScreenState extends State<MainScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.info_outline, size: 80, color: Colors.white.withOpacity(0.9)),
+              Icon(Icons.info_outline,
+                  size: 80,
+                  color: isDarkMode
+                      ? Colors.white70
+                      : Colors.white.withOpacity(0.9)),
               const SizedBox(height: 20),
               Text(
                 'À propos',
                 style: GoogleFonts.lato(
                   fontSize: 32,
-                  color: Colors.white,
+                  color: isDarkMode ? Colors.white70 : Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -294,18 +320,26 @@ class _MainScreenState extends State<MainScreen> {
               Text(
                 'Météo en direct\nCréée avec Flutter\nDonnées par WeatherAPI',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.lato(fontSize: 18, color: Colors.white70),
+                style: GoogleFonts.lato(
+                  fontSize: 18,
+                  color: isDarkMode ? Colors.grey[400] : Colors.white70,
+                ),
               ),
               const SizedBox(height: 30),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white.withOpacity(0.9),
-                  foregroundColor: Colors.black87,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                  backgroundColor: isDarkMode
+                      ? Colors.grey[800]
+                      : Colors.white.withOpacity(0.9),
+                  foregroundColor: isDarkMode ? Colors.white : Colors.black87,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25)),
                 ),
                 onPressed: () => controller.animateToPage(1,
-                    duration: const Duration(milliseconds: 400), curve: Curves.easeInOut),
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeInOut),
                 child: Text('Retour', style: GoogleFonts.lato(fontSize: 18)),
               ),
             ],
@@ -315,59 +349,97 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  void toggleTheme() {
+    setState(() {
+      isDarkMode = !isDarkMode;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: PageView(
-              controller: controller,
-              children: [
-                buildLoadingPage(),
-                buildWeatherPage(),
-                buildAboutPage(),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: SmoothPageIndicator(
-              controller: controller,
-              count: 3,
-              effect: SlideEffect(
-                spacing: 8.0,
-                radius: 4.0,
-                dotWidth: 8.0,
-                dotHeight: 8.0,
-                dotColor: Colors.white.withOpacity(0.5),
-                activeDotColor: Colors.white,
+    return Theme(
+      data: isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      child: Scaffold(
+        body: Column(
+          children: [
+            Expanded(
+              child: PageView(
+                controller: controller,
+                children: [
+                  buildLoadingPage(),
+                  buildWeatherPage(),
+                  buildAboutPage(),
+                ],
               ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SmoothPageIndicator(
+                    controller: controller,
+                    count: 3,
+                    effect: SlideEffect(
+                      spacing: 8.0,
+                      radius: 4.0,
+                      dotWidth: 8.0,
+                      dotHeight: 8.0,
+                      dotColor: Colors.grey[600]!,
+                      activeDotColor:
+                          isDarkMode ? Colors.white70 : Colors.black,
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  IconButton(
+                    icon: Icon(
+                        isDarkMode ? Icons.wb_sunny : Icons.nightlight_round),
+                    color: isDarkMode ? Colors.white70 : Colors.black,
+                    onPressed: toggleTheme,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   LatLng _getCityCoordinates(String city) {
     switch (city) {
-      case 'Dakar': return LatLng(14.7247, -17.4844);
-      case 'Thiès': return LatLng(14.7833, -16.9167);
-      case 'Fatick': return LatLng(14.3333, -16.4167);
-      case 'Saint-Louis': return LatLng(16.0333, -16.5);
-      case 'Conakry': return LatLng(9.6412, -13.5784);
-      case 'Kindia': return LatLng(10.0407, -12.8546);
-      case 'Nouakchott': return LatLng(18.0735, -15.9582);
-      case 'Nouadhibou': return LatLng(20.9419, -17.0363);
-      case 'Tombouctou': return LatLng(16.7666, -3.0026);
-      case 'Banjul': return LatLng(13.4549, -16.5790);
-      case 'Dubaï': return LatLng(25.2769, 55.2962);
-      case 'Paris': return LatLng(48.8584, 2.2945);
-      case 'Réunion': return LatLng(-21.1151, 55.5364);
-      case 'New York': return LatLng(40.7128, -74.0060);
-      case 'Phoenix': return LatLng(33.4484, -112.0740);
-      default: return LatLng(0.0, 0.0);
+      case 'Dakar':
+        return LatLng(14.7247, -17.4844);
+      case 'Thiès':
+        return LatLng(14.7833, -16.9167);
+      case 'Fatick':
+        return LatLng(14.3333, -16.4167);
+      case 'Saint-Louis':
+        return LatLng(16.0333, -16.5);
+      case 'Conakry':
+        return LatLng(9.6412, -13.5784);
+      case 'Kindia':
+        return LatLng(10.0407, -12.8546);
+      case 'Nouakchott':
+        return LatLng(18.0735, -15.9582);
+      case 'Nouadhibou':
+        return LatLng(20.9419, -17.0363);
+      case 'Tombouctou':
+        return LatLng(16.7666, -3.0026);
+      case 'Banjul':
+        return LatLng(13.4549, -16.5790);
+      case 'Dubaï':
+        return LatLng(25.2769, 55.2962);
+      case 'Paris':
+        return LatLng(48.8584, 2.2945);
+      case 'Réunion':
+        return LatLng(-21.1151, 55.5364);
+      case 'New York':
+        return LatLng(40.7128, -74.0060);
+      case 'Phoenix':
+        return LatLng(33.4484, -112.0740);
+      default:
+        return LatLng(0.0, 0.0);
     }
   }
 }

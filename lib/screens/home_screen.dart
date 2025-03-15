@@ -28,13 +28,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.blueGrey[200]!, Colors.blueGrey[400]!],
+            colors: isDarkMode
+                ? [Colors.blueGrey[900]!, Colors.blueGrey[700]!]
+                : [Colors.blueGrey[200]!, Colors.blueGrey[400]!],
           ),
         ),
         child: Stack(
